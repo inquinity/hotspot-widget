@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hotspot Widget</string>
+    <string name="hotspot_on">Hotspot On</string>
+    <string name="hotspot_off">Hotspot Off</string>
+    <string name="hotspot_status">Hotspot Status</string>
+    <string name="battery_status">Battery Status</string>
+    <string name="toggle_hotspot">Toggle Hotspot</string>
+    <string name="confirm_toggle">Are you sure you want to toggle the hotspot?</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="turning_on">Turning on…</string>
+    <string name="turning_off">Turning off…</string>
+    <string name="error_toggle">Failed to toggle hotspot</string>
+    <string name="permission_denied">Permission denied</string>
+</resources>

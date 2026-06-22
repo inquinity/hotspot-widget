@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.HotspotWidget" parent="Theme.MaterialComponents.DayNight">
+        <item name="colorPrimary">@color/hotspot_on</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSecondary">@color/battery_medium</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+    </style>
+</resources>
