@@ -35,14 +35,14 @@ class HotspotRepository(context: Context) : IHotspotRepository {
         }
     }
 
-    @SuppressLint("MissingPermission", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
+    @SuppressLint("MissingPermission", "PrivateApi", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
     override suspend fun enableHotspot(): Boolean {
         return try {
             val method = connectivityManager.javaClass.getDeclaredMethod(
                 "startTethering",
                 Int::class.java,
                 Boolean::class.java,
-                Class.forName("android.net.ConnectivityManager${'$'}OnStartTetheringCallback")
+                Class.forName("android.net.ConnectivityManager" + '$' + "OnStartTetheringCallback")
             )
             method.isAccessible = true
             method.invoke(connectivityManager, 0, true, null)
@@ -53,7 +53,7 @@ class HotspotRepository(context: Context) : IHotspotRepository {
         }
     }
 
-    @SuppressLint("MissingPermission", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
+    @SuppressLint("MissingPermission", "PrivateApi", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
     override suspend fun disableHotspot(): Boolean {
         return try {
             val method =
@@ -72,7 +72,7 @@ class HotspotRepository(context: Context) : IHotspotRepository {
     // Wi-Fi tethering interface (e.g. wlan0, ap0). They are external identifiers,
     // not typos, so spell-checking is suppressed for this function only.
     @Suppress("SpellCheckingInspection")
-    @SuppressLint("MissingPermission", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
+    @SuppressLint("MissingPermission", "PrivateApi", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
     private fun isHotspotEnabled(): Boolean {
         return try {
             val method = connectivityManager.javaClass.getDeclaredMethod("getTetheredIfaces")
