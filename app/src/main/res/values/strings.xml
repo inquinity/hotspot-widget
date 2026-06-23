@@ -25,4 +25,5 @@
     <string name="status_on">On</string>
     <string name="status_off">Off</string>
     <string name="status_updating">…</string>
+    <string name="grant_write_settings">Allow “Modify system settings”, then tap the widget again to toggle the hotspot.</string>
 </resources>

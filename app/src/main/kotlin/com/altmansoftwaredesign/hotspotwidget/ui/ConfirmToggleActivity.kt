@@ -1,9 +1,13 @@
 package com.altmansoftwaredesign.hotspotwidget.ui
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.provider.Settings
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.altmansoftwaredesign.hotspotwidget.R
 import com.altmansoftwaredesign.hotspotwidget.repository.HotspotRepository
@@ -47,8 +51,24 @@ class ConfirmToggleActivity : Activity() {
             .setTitle(R.string.toggle_hotspot)
             .setMessage(messageRes)
             .setPositiveButton(confirmLabel) { _, _ ->
-                vibrate()
-                BatteryMonitorService.toggle(this)
+                if (!Settings.System.canWrite(this)) {
+                    // Toggling tethering needs WRITE_SETTINGS; send the user to grant
+                    // it once, then they tap the widget again to actually toggle.
+                    Toast.makeText(
+                        this,
+                        R.string.grant_write_settings,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                            Uri.parse("package:$packageName")
+                        )
+                    )
+                } else {
+                    vibrate()
+                    BatteryMonitorService.toggle(this)
+                }
                 finish()
             }
             .setNegativeButton(R.string.cancel) { _, _ -> finish() }
