@@ -5,16 +5,13 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.os.VibrationEffect
-import android.os.Vibrator
 import android.widget.RemoteViews
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.altmansoftwaredesign.hotspotwidget.R
 import com.altmansoftwaredesign.hotspotwidget.repository.BatteryRepository
 import com.altmansoftwaredesign.hotspotwidget.repository.HotspotRepository
-import kotlinx.coroutines.GlobalScope
+import com.altmansoftwaredesign.hotspotwidget.ui.ConfirmToggleActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class HotspotWidgetProvider : AppWidgetProvider() {
@@ -29,35 +26,7 @@ class HotspotWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-
-        when (intent.action) {
-            ACTION_TOGGLE_HOTSPOT -> {
-                val appWidgetId = intent.getIntExtra(
-                    AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID
-                )
-                if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    handleToggleClick(context, appWidgetId)
-                }
-            }
-        }
-    }
-
-    private fun handleToggleClick(context: Context, appWidgetId: Int) {
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
-
-        val workRequest = OneTimeWorkRequestBuilder<WidgetToggleWorker>()
-            .setInputData(workDataOf(KEY_APPWIDGET_ID to appWidgetId))
-            .build()
-
-        WorkManager.getInstance(context).enqueue(workRequest)
-    }
-
     companion object {
-        const val ACTION_TOGGLE_HOTSPOT = "com.altmansoftwaredesign.hotspotwidget.TOGGLE_HOTSPOT"
         const val KEY_APPWIDGET_ID = "appwidget_id"
 
         fun updateAppWidget(
@@ -65,7 +34,7 @@ class HotspotWidgetProvider : AppWidgetProvider() {
             appWidgetManager: AppWidgetManager,
             appWidgetId: Int
         ) {
-            GlobalScope.launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 val hotspotRepo = HotspotRepository(context)
                 val batteryRepo = BatteryRepository(context)
 
@@ -100,18 +69,18 @@ class HotspotWidgetProvider : AppWidgetProvider() {
                     "${batteryState.percentage}%"
                 )
 
-                // Set click listener
-                val toggleIntent = Intent(context, HotspotWidgetProvider::class.java).apply {
-                    action = ACTION_TOGGLE_HOTSPOT
+                // Tapping the widget opens the confirmation dialog before toggling
+                val confirmIntent = Intent(context, ConfirmToggleActivity::class.java).apply {
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
-                val pendingIntent = PendingIntent.getBroadcast(
+                val pendingIntent = PendingIntent.getActivity(
                     context,
                     appWidgetId,
-                    toggleIntent,
+                    confirmIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                views.setOnClickPendingIntent(R.id.hotspot_icon, pendingIntent)
+                views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             }

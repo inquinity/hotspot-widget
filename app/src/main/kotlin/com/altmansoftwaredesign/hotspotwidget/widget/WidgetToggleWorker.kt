@@ -20,24 +20,25 @@ class WidgetToggleWorker(context: Context, params: WorkerParameters) :
             val hotspotRepo = HotspotRepository(applicationContext)
             val currentState = hotspotRepo.getHotspotState()
 
-            val success = if (currentState.isEnabled) {
+            if (currentState.isEnabled) {
                 hotspotRepo.disableHotspot()
             } else {
                 hotspotRepo.enableHotspot()
             }
 
-            if (success) {
-                val appWidgetManager = AppWidgetManager.getInstance(applicationContext)
-                HotspotWidgetProvider.updateAppWidget(
-                    applicationContext,
-                    appWidgetManager,
-                    appWidgetId
-                )
-            }
+            // Always refresh the widget to reflect the true post-toggle state,
+            // whether or not the toggle itself succeeded. This is a one-shot,
+            // user-initiated action, so never auto-retry in the background.
+            val appWidgetManager = AppWidgetManager.getInstance(applicationContext)
+            HotspotWidgetProvider.updateAppWidget(
+                applicationContext,
+                appWidgetManager,
+                appWidgetId
+            )
 
-            if (success) Result.success() else Result.retry()
+            Result.success()
         } catch (e: Exception) {
-            Result.retry()
+            Result.failure()
         }
     }
 }

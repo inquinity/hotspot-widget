@@ -6,4 +6,11 @@
         <item name="colorSecondary">@color/battery_medium</item>
         <item name="colorOnSecondary">@android:color/white</item>
     </style>
+
+    <style name="Theme.HotspotWidget.Transparent" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
 </resources>

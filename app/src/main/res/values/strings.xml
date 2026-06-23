@@ -7,6 +7,10 @@
     <string name="battery_status">Battery Status</string>
     <string name="toggle_hotspot">Toggle Hotspot</string>
     <string name="confirm_toggle">Are you sure you want to toggle the hotspot?</string>
+    <string name="confirm_turn_on">Turn the hotspot on?</string>
+    <string name="confirm_turn_off">Turn the hotspot off?</string>
+    <string name="turn_on">Turn On</string>
+    <string name="turn_off">Turn Off</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
     <string name="turning_on">Turning on…</string>

@@ -46,8 +46,7 @@ dependencies {
     implementation("androidx.core:core:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
 
-    // AppWidget
-    implementation("androidx.appwidget:appwidget:1.0.1")
+    // AppWidget (included in framework for API 31+)
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
