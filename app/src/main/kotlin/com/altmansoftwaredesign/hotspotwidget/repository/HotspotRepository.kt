@@ -22,7 +22,6 @@ interface IHotspotRepository {
  * private signatures may change in future Android releases. The reflection lint
  * and spell-check warnings below are suppressed deliberately for that reason.
  */
-@Suppress("SpellCheckingInspection")
 class HotspotRepository(context: Context) : IHotspotRepository {
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -68,6 +67,11 @@ class HotspotRepository(context: Context) : IHotspotRepository {
         }
     }
 
+    // "getTetheredIfaces" is the real (hidden) ConnectivityManager method name,
+    // and "wlan"/"ap" are the actual OS network-interface name prefixes for the
+    // Wi-Fi tethering interface (e.g. wlan0, ap0). They are external identifiers,
+    // not typos, so spell-checking is suppressed for this function only.
+    @Suppress("SpellCheckingInspection")
     @SuppressLint("MissingPermission", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
     private fun isHotspotEnabled(): Boolean {
         return try {
