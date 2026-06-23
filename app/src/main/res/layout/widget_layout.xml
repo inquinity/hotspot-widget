@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:gravity="center"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="12dp">
 
     <!-- Hotspot Status Section -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical">
@@ -35,17 +35,17 @@
 
     <!-- Divider -->
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginVertical="4dp"
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="4dp"
         android:background="@color/divider"
         android:contentDescription="@null"
         android:importantForAccessibility="no" />
 
     <!-- Battery Status Section -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="center"
         android:orientation="vertical">
