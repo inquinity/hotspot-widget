@@ -37,7 +37,7 @@ class WidgetToggleWorker(context: Context, params: WorkerParameters) :
             )
 
             Result.success()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.failure()
         }
     }

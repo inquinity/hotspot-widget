@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import com.altmansoftwaredesign.hotspotwidget.model.HotspotState
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 interface IHotspotRepository {
     suspend fun getHotspotState(): HotspotState
@@ -12,52 +13,62 @@ interface IHotspotRepository {
     suspend fun disableHotspot(): Boolean
 }
 
-class HotspotRepository(private val context: Context) : IHotspotRepository {
+/**
+ * Toggles and queries the Wi-Fi hotspot.
+ *
+ * Android does not expose a public API for programmatically toggling tethering,
+ * so we reach the hidden ConnectivityManager methods via reflection. This is the
+ * only option on API 31+ for a non-system app and is inherently fragile: the
+ * private signatures may change in future Android releases. The reflection lint
+ * and spell-check warnings below are suppressed deliberately for that reason.
+ */
+@Suppress("SpellCheckingInspection")
+class HotspotRepository(context: Context) : IHotspotRepository {
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     @SuppressLint("MissingPermission")
     override suspend fun getHotspotState(): HotspotState {
         return try {
-            val isTethered = isHotspotEnabled()
-            HotspotState(isEnabled = isTethered)
+            HotspotState(isEnabled = isHotspotEnabled())
         } catch (e: Exception) {
             HotspotState(isEnabled = false, error = e.message)
         }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
     override suspend fun enableHotspot(): Boolean {
         return try {
             val method = connectivityManager.javaClass.getDeclaredMethod(
                 "startTethering",
                 Int::class.java,
                 Boolean::class.java,
-                Class.forName("android.net.ConnectivityManager\$OnStartTetheringCallback")
+                Class.forName("android.net.ConnectivityManager${'$'}OnStartTetheringCallback")
             )
             method.isAccessible = true
             method.invoke(connectivityManager, 0, true, null)
-            delay(1000)
+            delay(1.seconds)
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
     override suspend fun disableHotspot(): Boolean {
         return try {
-            val method = connectivityManager.javaClass.getDeclaredMethod("stopTethering", Int::class.java)
+            val method =
+                connectivityManager.javaClass.getDeclaredMethod("stopTethering", Int::class.java)
             method.isAccessible = true
             method.invoke(connectivityManager, 0)
-            delay(1000)
+            delay(1.seconds)
             true
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "DiscouragedPrivateApi", "SoonBlockedPrivateApi")
     private fun isHotspotEnabled(): Boolean {
         return try {
             val method = connectivityManager.javaClass.getDeclaredMethod("getTetheredIfaces")
@@ -65,7 +76,7 @@ class HotspotRepository(private val context: Context) : IHotspotRepository {
             @Suppress("UNCHECKED_CAST")
             val tethered = method.invoke(connectivityManager) as Array<String>
             tethered.any { it.startsWith("wlan") || it.startsWith("ap") }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
