@@ -1,70 +1,80 @@
 # Hotspot Widget
 
-A minimal Android 12+ widget that displays hotspot status and battery percentage, with the ability to toggle hotspot via confirmation dialog.
+A minimal Android 12+ home-screen widget that shows Wi-Fi hotspot status and
+battery percentage, and toggles the hotspot on/off (with a confirmation dialog)
+when tapped.
 
 ## Features
 
-- **2x2 Compact Widget** — minimal footprint on home screen
-- **Hotspot Status Display** — shows current hotspot state (on/off) with icon
-- **Battery Percentage** — displays current battery level with color indicator
-- **One-click Toggle** — taps widget icon to initiate hotspot toggle
-- **Confirmation Dialog** — explicit buttons to confirm/cancel toggle action
-- **Auto-dismiss** — dialog closes automatically on successful toggle
-- **Material You Theming** — automatically adapts to device theme
+- **Compact horizontal widget** — hotspot status on the left, battery on the
+  right, separated by a divider; resizable
+- **Hotspot status** — on/off, with icon
+- **Battery percentage** — with a colour indicator (green/orange/red by level)
+- **Tap to toggle** — tapping the widget opens a confirmation dialog before
+  changing the hotspot; the dialog wording adapts to the current state
+  (“Turn on?” / “Turn off?”)
+- **Live updates** — a small foreground service keeps the battery and hotspot
+  readings current, including when the hotspot is changed from Quick Settings or
+  elsewhere. Its required ongoing notification is made useful, showing
+  `Hotspot: On/Off · Battery NN%`.
 
 ## Requirements
 
-- **Android 12 or later** (uses TetheringManager API 31+)
-- **Gradle 8.0+**
-- **Android Studio** (or CLI with gradle wrapper)
-- **OnePlus Nord N200** (or compatible Android 12+ device)
+- **Android 12 or later** (uses the hidden `TetheringManager` API, API 31+)
+- **JDK 17**, **Android Studio** (or the bundled Gradle wrapper)
+- Built/tested against a **OnePlus Nord N200** (DE2117, Android 12)
 
-## Build & Installation
+## Build & install
 
-### 1. Build the APK
 ```bash
 ./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### 2. Install via ADB
-```bash
-adb install app/build/outputs/apk/debug/app-debug.apk
-```
+Then add the widget: long-press the home screen → **Widgets** → **Hotspot
+Widget** → drag it onto a home screen.
 
-### 3. Add Widget to Home Screen
-- Long-press home screen → "Add widget"
-- Search for "Hotspot Widget"
-- Place on home screen
+## First run — one-time permission
+
+Toggling tethering requires the **WRITE_SETTINGS** (“Modify system settings”)
+permission. The first time you tap **Turn On/Off**, the app sends you to the
+grant screen; allow it once, then tap the widget again. (Opening the app icon
+shows a small setup screen with the current permission status.)
 
 ## Permissions
 
-The app requires these runtime permissions:
-- `CHANGE_NETWORK_STATE` — to toggle hotspot on/off
-- `ACCESS_NETWORK_STATE` — to query current hotspot state
-- `VIBRATE` — for haptic feedback on widget click (optional)
-
-Grant permissions in Settings → Apps → Hotspot Widget → Permissions.
+- `WRITE_SETTINGS` — required to turn tethering on/off (user-granted once)
+- `CHANGE_NETWORK_STATE` / `ACCESS_NETWORK_STATE` — query/control tethering
+- `FOREGROUND_SERVICE` (+ `FOREGROUND_SERVICE_SPECIAL_USE`) — run the live monitor
+- `RECEIVE_BOOT_COMPLETED` — restart the monitor after a reboot (only if a
+  widget is placed)
+- `POST_NOTIFICATIONS` — show the monitor notification (only enforced on
+  Android 13+)
+- `VIBRATE` — haptic tick on confirm
 
 ## Architecture
 
-### Core Components
-- **HotspotWidgetProvider** — main widget lifecycle manager
-- **WidgetToggleWorker** — handles hotspot state changes
-- **HotspotRepository** — queries/modifies hotspot state (Android 12+ TetheringManager)
-- **BatteryRepository** — queries battery level and status
-- **WidgetState** — data models for state management
+- **HotspotWidgetProvider** — draws the widget; starts the monitor only from
+  allowed contexts (Android 12+ forbids starting a foreground service from a
+  broadcast receiver), and stops it in `onDisabled`
+- **ConfirmToggleActivity** — transparent dialog activity; checks WRITE_SETTINGS,
+  then drives the toggle through the service (a widget tap is an allowed
+  foreground-service start context)
+- **BatteryMonitorService** — foreground service; listens for
+  `ACTION_BATTERY_CHANGED` and `TETHER_STATE_CHANGED`, refreshes the widget and
+  notification, and performs the actual toggle
+- **HotspotRepository** — reflects into `TetheringManager.startTethering` /
+  `stopTethering` (callback supplied via a `Proxy`) and reads live state via
+  `getTetheredIfaces()`
+- **BatteryRepository** — reads battery level/status
+- **BootReceiver** — restarts the monitor on boot if a widget exists
 
 ### Layout
-- **2x2 widget** (110dp x 110dp) stacked vertically
-- Top half: Hotspot status + icon
-- Divider
-- Bottom half: Battery percentage + icon
 
-## Future Features
+Horizontal 3×1 widget: hotspot icon + status on the left, vertical divider,
+battery icon + percentage on the right.
 
-See [future_ideas.md](future_ideas.md) for planned enhancements including:
-- Display hotspot SSID
-- Show connected device count
-- Haptic feedback on toggle
-- Battery cutoff threshold
-- Data usage monitoring
+## Future ideas
+
+See [future_ideas.md](future_ideas.md) — SSID, connected-device count, haptics,
+battery cutoff, data-usage monitoring.

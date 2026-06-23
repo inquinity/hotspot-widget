@@ -10,4 +10,5 @@
     <color name="widget_background">#FAFAFA</color>
     <color name="widget_text">#1A1A1A</color>
     <color name="divider">#E0E0E0</color>
+    <color name="ic_launcher_background">#1565C0</color>
 </resources>
