@@ -38,7 +38,9 @@ class BatteryMonitorService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var receiverRegistered = false
 
-    private val batteryReceiver = object : BroadcastReceiver() {
+    // Fires on battery changes (sticky) and on tethering changes from ANY source
+    // — Quick Settings, Settings, another app, or Android auto-disabling it.
+    private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             refresh()
         }
@@ -50,7 +52,7 @@ class BatteryMonitorService : Service() {
         // Satisfy the 5-second startForeground requirement immediately with a
         // placeholder, then refresh asynchronously with real data.
         startForeground(NOTIFICATION_ID, buildNotification(null, null))
-        registerBatteryReceiver()
+        registerStateReceiver()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -75,12 +77,16 @@ class BatteryMonitorService : Service() {
         }
     }
 
-    private fun registerBatteryReceiver() {
+    private fun registerStateReceiver() {
         if (!receiverRegistered) {
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_BATTERY_CHANGED)
+                addAction(ACTION_TETHER_STATE_CHANGED)
+            }
             ContextCompat.registerReceiver(
                 this,
-                batteryReceiver,
-                IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+                stateReceiver,
+                filter,
                 ContextCompat.RECEIVER_NOT_EXPORTED
             )
             receiverRegistered = true
@@ -145,7 +151,7 @@ class BatteryMonitorService : Service() {
 
     override fun onDestroy() {
         if (receiverRegistered) {
-            unregisterReceiver(batteryReceiver)
+            unregisterReceiver(stateReceiver)
             receiverRegistered = false
         }
         scope.cancel()
@@ -158,6 +164,11 @@ class BatteryMonitorService : Service() {
         private const val CHANNEL_ID = "battery_monitor"
         private const val NOTIFICATION_ID = 1
         private const val ACTION_TOGGLE = "com.altmansoftwaredesign.hotspotwidget.action.TOGGLE"
+
+        // Hidden system broadcast (ConnectivityManager.ACTION_TETHER_STATE_CHANGED).
+        // Not a public constant, but the action string is stable in practice; if a
+        // future Android stops sending it we fall back to the battery-tick refresh.
+        private const val ACTION_TETHER_STATE_CHANGED = "android.net.conn.TETHER_STATE_CHANGED"
 
         /**
          * Start (or ensure running) the monitor. Must be called from an allowed
