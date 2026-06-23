@@ -35,6 +35,13 @@
             android:launchMode="singleTop"
             android:theme="@style/Theme.HotspotWidget.Transparent" />
 
+        <activity
+            android:name=".ui.AboutActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.HotspotWidget.Transparent" />
+
         <receiver
             android:name=".widget.HotspotWidgetProvider"
             android:exported="true"

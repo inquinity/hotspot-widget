@@ -28,4 +28,7 @@
     <string name="setup_status_granted">✓ Permission granted — you\'re all set.</string>
     <string name="setup_status_needed">✗ Permission not granted yet.</string>
     <string name="setup_grant_button">Grant permission</string>
+
+    <!-- About dialog -->
+    <string name="about_version">Version %1$s\n\nAltman Software Design</string>
 </resources>

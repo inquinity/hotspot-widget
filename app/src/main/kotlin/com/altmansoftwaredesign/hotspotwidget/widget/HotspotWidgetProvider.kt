@@ -10,6 +10,7 @@ import com.altmansoftwaredesign.hotspotwidget.R
 import com.altmansoftwaredesign.hotspotwidget.repository.BatteryRepository
 import com.altmansoftwaredesign.hotspotwidget.repository.HotspotRepository
 import com.altmansoftwaredesign.hotspotwidget.service.BatteryMonitorService
+import com.altmansoftwaredesign.hotspotwidget.ui.AboutActivity
 import com.altmansoftwaredesign.hotspotwidget.ui.ConfirmToggleActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -76,18 +77,31 @@ class HotspotWidgetProvider : AppWidgetProvider() {
                     "${batteryState.percentage}%"
                 )
 
-                // Tapping the widget opens the confirmation dialog before toggling
+                // Tapping the widget opens the confirmation dialog before toggling.
                 val confirmIntent = Intent(context, ConfirmToggleActivity::class.java).apply {
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
-                val pendingIntent = PendingIntent.getActivity(
+                val confirmPendingIntent = PendingIntent.getActivity(
                     context,
                     appWidgetId,
                     confirmIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+                views.setOnClickPendingIntent(R.id.widget_root, confirmPendingIntent)
+
+                // Tapping the battery side instead shows the About dialog. A child
+                // click overrides the root's for that region.
+                val aboutIntent = Intent(context, AboutActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                val aboutPendingIntent = PendingIntent.getActivity(
+                    context,
+                    appWidgetId,
+                    aboutIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(R.id.battery_section, aboutPendingIntent)
 
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             }

@@ -42,8 +42,9 @@
         android:contentDescription="@null"
         android:importantForAccessibility="no" />
 
-    <!-- Battery Status Section -->
+    <!-- Battery Status Section (tapping shows the About dialog) -->
     <LinearLayout
+        android:id="@+id/battery_section"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
