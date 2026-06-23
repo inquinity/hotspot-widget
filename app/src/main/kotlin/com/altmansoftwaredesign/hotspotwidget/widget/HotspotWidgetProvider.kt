@@ -9,6 +9,7 @@ import android.widget.RemoteViews
 import com.altmansoftwaredesign.hotspotwidget.R
 import com.altmansoftwaredesign.hotspotwidget.repository.BatteryRepository
 import com.altmansoftwaredesign.hotspotwidget.repository.HotspotRepository
+import com.altmansoftwaredesign.hotspotwidget.service.BatteryMonitorService
 import com.altmansoftwaredesign.hotspotwidget.ui.ConfirmToggleActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,14 +22,20 @@ class HotspotWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
+        // Just draw the widgets. The live monitor is started from a user tap
+        // (ConfirmToggleActivity) or BootReceiver — never from here, because
+        // Android 12+ forbids starting a foreground service from a receiver.
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
     }
 
-    companion object {
-        const val KEY_APPWIDGET_ID = "appwidget_id"
+    override fun onDisabled(context: Context) {
+        // Last widget removed: tear the monitor (and its notification) down.
+        BatteryMonitorService.stop(context)
+    }
 
+    companion object {
         fun updateAppWidget(
             context: Context,
             appWidgetManager: AppWidgetManager,

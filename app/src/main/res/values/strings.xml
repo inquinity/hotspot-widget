@@ -17,4 +17,12 @@
     <string name="turning_off">Turning off…</string>
     <string name="error_toggle">Failed to toggle hotspot</string>
     <string name="permission_denied">Permission denied</string>
+
+    <!-- Foreground service notification -->
+    <string name="notification_channel_name">Battery &amp; hotspot status</string>
+    <string name="notification_channel_desc">Keeps the widget\'s battery and hotspot reading up to date.</string>
+    <string name="notification_status">Hotspot: %1$s · Battery %2$s</string>
+    <string name="status_on">On</string>
+    <string name="status_off">Off</string>
+    <string name="status_updating">…</string>
 </resources>

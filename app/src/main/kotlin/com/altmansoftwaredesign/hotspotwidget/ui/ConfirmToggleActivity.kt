@@ -1,43 +1,37 @@
 package com.altmansoftwaredesign.hotspotwidget.ui
 
 import android.app.Activity
-import android.appwidget.AppWidgetManager
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.appcompat.app.AlertDialog
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.altmansoftwaredesign.hotspotwidget.R
-import com.altmansoftwaredesign.hotspotwidget.widget.HotspotWidgetProvider
-import com.altmansoftwaredesign.hotspotwidget.widget.WidgetToggleWorker
+import com.altmansoftwaredesign.hotspotwidget.repository.HotspotRepository
+import com.altmansoftwaredesign.hotspotwidget.service.BatteryMonitorService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.altmansoftwaredesign.hotspotwidget.repository.HotspotRepository
 
 class ConfirmToggleActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val appWidgetId = intent.getIntExtra(
-            AppWidgetManager.EXTRA_APPWIDGET_ID,
-            AppWidgetManager.INVALID_APPWIDGET_ID
-        )
+        // A widget tap is an allowed context to start a foreground service, so
+        // ensure the live battery/hotspot monitor is running from here.
+        BatteryMonitorService.start(this)
 
-        // Determine current state to phrase the dialog correctly
+        // Determine current state to phrase the dialog correctly.
         CoroutineScope(Dispatchers.Main).launch {
             val isEnabled = withContext(Dispatchers.IO) {
                 HotspotRepository(applicationContext).getHotspotState().isEnabled
             }
-            showDialog(appWidgetId, isEnabled)
+            showDialog(isEnabled)
         }
     }
 
-    private fun showDialog(appWidgetId: Int, isCurrentlyEnabled: Boolean) {
+    private fun showDialog(isCurrentlyEnabled: Boolean) {
         val messageRes = if (isCurrentlyEnabled) {
             R.string.confirm_turn_off
         } else {
@@ -54,19 +48,12 @@ class ConfirmToggleActivity : Activity() {
             .setMessage(messageRes)
             .setPositiveButton(confirmLabel) { _, _ ->
                 vibrate()
-                enqueueToggle(appWidgetId)
+                BatteryMonitorService.toggle(this)
                 finish()
             }
             .setNegativeButton(R.string.cancel) { _, _ -> finish() }
             .setOnCancelListener { finish() }
             .show()
-    }
-
-    private fun enqueueToggle(appWidgetId: Int) {
-        val workRequest = OneTimeWorkRequestBuilder<WidgetToggleWorker>()
-            .setInputData(workDataOf(HotspotWidgetProvider.KEY_APPWIDGET_ID to appWidgetId))
-            .build()
-        WorkManager.getInstance(applicationContext).enqueue(workRequest)
     }
 
     private fun vibrate() {
