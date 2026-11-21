@@ -108,10 +108,12 @@ class HotspotRepository(context: Context) {
         }
     }
 
-    // "getTetheredIfaces" is the real (hidden) ConnectivityManager method name,
-    // and "wlan"/"ap" are the actual OS network-interface name prefixes for the
-    // Wi-Fi tethering interface (e.g. wlan0, ap0). They are external identifiers,
-    // not typos, so spell-checking is suppressed for this function only.
+    // "getTetheredIfaces" is the real (hidden) ConnectivityManager method name.
+    // The Wi-Fi tethering interface's OS name varies by OEM: stock AOSP uses
+    // "wlan0"/"ap0", but Samsung's stack names it "swlan0" — neither prefix
+    // check catches that, so match "wlan" anywhere in the name instead of only
+    // at the start. These are external identifiers, not typos, so spell-checking
+    // is suppressed for this function only.
     // Throws if the reflection fails; the caller turns that into an "unknown"
     // state. Do not swallow it into `false` — see [getHotspotState].
     @Suppress("SpellCheckingInspection")
@@ -121,7 +123,7 @@ class HotspotRepository(context: Context) {
         method.isAccessible = true
         @Suppress("UNCHECKED_CAST")
         val tethered = method.invoke(connectivityManager) as Array<String>
-        return tethered.any { it.startsWith("wlan") || it.startsWith("ap") }
+        return tethered.any { it.startsWith("ap") || it.contains("wlan") }
     }
 
     private companion object {
